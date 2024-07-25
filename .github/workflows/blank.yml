@@ -1,8 +1,40 @@
-name: hello-world
-on: push
+name: WizCLI Scan
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
 jobs:
-  my-job:
+  wizcli-scan:
     runs-on: ubuntu-latest
+
     steps:
-      - name: my-step
-        run: echo "Hello World!"
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install WizCLI
+        run: |
+          pip install wizcli
+
+      - name: Run WizCLI scan
+        env:
+          WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
+          WIZ_CLIENT_SECRET: ${{ WIZ_CLIENT_SECRET }}
+        run: |
+          wizcli scan --directory .
+
+      - name: Upload Scan Results
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: wizcli-scan-results
+          path: path/to/scan/results
